@@ -1,0 +1,8 @@
+*env/
+*.ipynb
+.env
+*.png
+*testes*
+__pycache__/
+data/
+*.DS_Store*
