@@ -1,11 +1,12 @@
 # -*- coding: UTF-8 -*-
 """Import modules"""
-from datetime import datetime
+from io import BytesIO
+from os import path
+
 import numpy as np
 import pandas as pd
-from os import path
 import statsmodels.api as sm
-from io import BytesIO
+
 
 class DiabetesModel:
     """
@@ -44,12 +45,15 @@ class DiabetesModel:
         """calculates basic stats
         return matrix"""
 
+        # func for the 1st question 
+
         means = [self.data[column].mean().round(2) for column in self.data.columns]
         means.insert(0, "Média")
 
         stds = [self.data[column].std().round(2) for column in self.data.columns]
         stds.insert(0, "Desvio\nPadrão")
 
+        # matrix to be rendered
         result_matrix = [["statistic"] + list(self.data.columns),
                          means,
                          stds]
@@ -60,6 +64,9 @@ class DiabetesModel:
     def _plot_graphs(self) -> BytesIO:
         """Plot graphics"""
 
+        # func for the question 2
+        
+        # rendering graphs
         img_idade_glicose = self.utils._render_graphics(
             self.data, 
             "Idade x Glicose", 
@@ -72,7 +79,7 @@ class DiabetesModel:
             ["imc", "pressao_arterial"]
         )
 
-        print("Rendered Graphics")
+        print("Ploted Graphics")
         
         return img_idade_glicose, img_pressao_imc
     
@@ -82,16 +89,24 @@ class DiabetesModel:
         """Build Simple Reg 
         Models"""
 
-        try:
-            data = self.data.fillna(0)
+        # func for question 3
 
+        try:
+
+            # remove 0 values for the selected columns
+            data = self.data.loc[(self.data[columns[0]] != 0) & (self.data[columns[1]] != 0)]
+            
+            # create the variables vectors
             x = np.array(data[columns[0]], dtype=float)
             y = np.array(data[columns[1]], dtype=float)
 
+            # set the indep var
             x_sm = sm.add_constant(x)
 
+            # run the model
             result = sm.OLS(y, x_sm).fit()
 
+            # build results matrix
             parameters = result.params.round(3).tolist()
             parameters.insert(0, "Parâmetros")
 
@@ -123,27 +138,47 @@ class DiabetesModel:
     def _plot_reg_lines(self) -> BytesIO:
         """Plot graphics"""
 
+        # func for question 4
+
         modelo_glicose = self._build_simple_model(["idade", "glicose"])
 
-        predictions_glicose = modelo_glicose[1][1] + (modelo_glicose[1][2] * np.array(self.data["idade"]))
+        try:
+            # remove 0 from model variables columns
+            data = self.data.loc[(self.data["idade"] != 0) & (self.data["glicose"] != 0)]
 
-        reg_idade_glicose = self.utils._render_graphics(
-            self.data, "Idade x Glicose", 
-            ["idade", "glicose"],
-            regplot=True,
-            predictions=predictions_glicose
-        )
+            # create the predictions vector
+            predictions_glicose = modelo_glicose[1][1] + (modelo_glicose[1][2] * np.array(data["idade"]))
+
+            reg_idade_glicose = self.utils._render_graphics(
+                self.data, "Idade x Glicose", 
+                ["idade", "glicose"],
+                regplot=True,
+                predictions=predictions_glicose
+            )
+
+        except Exception as error:
+            raise OSError(error) from error
 
         modelo_pressao = self._build_simple_model(["imc", "pressao_arterial"])
 
-        predictions_pressao = modelo_pressao[1][1] + (modelo_pressao[1][2] * np.array(self.data["imc"]))
+        try:
 
-        reg_pressao_imc = self.utils._render_graphics(
-            self.data, "Pressão Arterial x IMC", 
-            ["imc", "pressao_arterial"],
-            regplot=True,
-            predictions=predictions_pressao
-        )
+            # remove 0 from model variables columns
+            data = self.data.loc[(self.data["imc"] != 0) & (self.data["pressao_arterial"] != 0)]
+
+            # create the predictions vector
+            predictions_pressao = modelo_pressao[1][1] + (modelo_pressao[1][2] * np.array(data["imc"]))
+
+            # render graphs with regline
+            reg_pressao_imc = self.utils._render_graphics(
+                self.data, "Pressão Arterial x IMC", 
+                ["imc", "pressao_arterial"],
+                regplot=True,
+                predictions=predictions_pressao
+            )
+        
+        except Exception as error:
+            raise OSError(error) from error
 
         print("Rendered Graphics")
         
@@ -155,8 +190,11 @@ class DiabetesModel:
         """Build Mult Reg
         Model"""
 
-        try:
+        # func for questions 5 and 6
 
+        try:
+            
+            # creates new dummy variable
             data = (
                 self.data
                 .assign(

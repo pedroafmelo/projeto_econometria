@@ -1,11 +1,11 @@
 # -*- coding: UTF-8 -*-
 """Import modules"""
-from datetime import datetime
+from os import path
+
 import numpy as np
 import pandas as pd
-from os import path
 import statsmodels.api as sm
-from io import BytesIO
+
 
 class SalaryModel:
     """
@@ -45,8 +45,11 @@ class SalaryModel:
         """Build Mult Reg
         Model"""
 
+        # func for question 1
+
         try:
 
+            # create log_salario column
             data = (
                 self.data
                 .assign(
@@ -55,13 +58,17 @@ class SalaryModel:
                     .fillna(0)
             )
 
+            # define vars vectors
             x = np.array(data[indep_cols], dtype=float)
             y = np.array(data["log_salario"], dtype=float)
 
+            # set independent variable
             x_sm = sm.add_constant(x)
 
+            # run model
             result = sm.OLS(y, x_sm).fit()
 
+            # build results matrix
             parameters = result.params.round(3).tolist()
             parameters.insert(0, "Parâmetros")
 
@@ -96,6 +103,9 @@ class SalaryModel:
         """calculates salary means
         return matrix"""
 
+        # func for question 3
+        
+        # agregate dataset by gender
         data_salary = (
             self.data
             .groupby("homem")
@@ -103,6 +113,7 @@ class SalaryModel:
             .agg("mean")
         )
 
+        # build result matrix
         result_matrix = [["Estatística", "Mulher", "Homem"],
                          ["Média Salarial ($)", float(data_salary[0].round(2)), 
                           float(data_salary[1].round(2))]]

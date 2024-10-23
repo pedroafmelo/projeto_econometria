@@ -1,16 +1,14 @@
 # -*- coding: UTF-8 -*-
 """Import modules"""
-import matplotlib.pyplot as plt
-import seaborn as sns
 import io
-from os import path
-from pandas import DataFrame, Series
+
+import matplotlib.pyplot as plt
 import numpy as np
-import statsmodels.api as sm
+from pandas import DataFrame, Series
 from reportlab.lib import colors
 from reportlab.lib.styles import ParagraphStyle
-from reportlab.platypus import Table, TableStyle, Paragraph
 from reportlab.pdfgen.canvas import Canvas
+from reportlab.platypus import Paragraph, Table, TableStyle
 
 
 class Utils:
@@ -55,10 +53,13 @@ class Utils:
         Graphics"""
         
         try:
+
+            data = data.loc[(data[axes[0]] != 0) & (data[axes[1]] != 0)]
         
+            # plot scatter graph
             plt.scatter(data=data, x=axes[0], y=axes[1])
 
-            if regplot:
+            if regplot: # plot regline if flag
                 regline = predictions
                 plt.plot(np.array(data[axes[0]]), regline, color="red", label="Reg. Line")
 
@@ -86,8 +87,9 @@ class Utils:
 
         table = Table(matrix)
 
+        # table styles configs
         table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),  # Cabeçalho
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey), 
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
