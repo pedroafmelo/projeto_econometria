@@ -30,7 +30,15 @@ class StaticVariables:
     teacher_name: str = "PROF. ANTÔNIO VINÍCIUS BARBOSA"
     authors: list = field(default_factory=list)
     title: str =  "PROJETO FINAL - ECONOMETRIA I"
+    github: str = "https://github.com/pedroafmelo/projeto_econometria"
 
     def __post_init__(self):
         self.authors = ["Pedro Augusto A. F. de Melo",
                      "Gabriel Batista Pontes"]
+
+
+@dataclass
+class Answers:
+    """Answers
+    dataclass"""
+
